@@ -1,7 +1,9 @@
 import jwt from "jsonwebtoken";
-import User from "../models/User.js";
+import { PrismaClient } from '@prisma/client';
 
-const auth = async (req, res, next) => {
+const prisma = new PrismaClient();
+
+const authenticate = async (req, res, next) => {
   try {
     // Get token from header
     const token = req.header("Authorization")?.replace("Bearer ", "");
@@ -13,8 +15,8 @@ const auth = async (req, res, next) => {
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Find user by id - fix here to use decoded.userId
-    const user = await User.findById(decoded.userId);
+    // Find user by id
+    const user = await prisma.user.findUnique({ where: { id: decoded.id } });
 
     if (!user) {
       return res.status(401).json({ message: "User not found" });
@@ -29,4 +31,11 @@ const auth = async (req, res, next) => {
   }
 };
 
-export default auth;
+const authorize = (...roles) => (req, res, next) => {
+  if (!req.user || !roles.includes(req.user.role)) {
+    return res.status(403).json({ message: "Forbidden: insufficient privileges" });
+  }
+  next();
+};
+
+export { authenticate, authorize };

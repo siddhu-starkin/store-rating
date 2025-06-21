@@ -1,11 +1,14 @@
 import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcrypt';
+
+const prisma = new PrismaClient();
 
 export const register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, address, role } = req.body;
 
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !address) {
       return res.status(400).json({
         success: false,
         message: 'Please provide all required fields'
@@ -13,7 +16,7 @@ export const register = async (req, res) => {
     }
 
     // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
       return res.status(400).json({ 
         success: false,
@@ -21,19 +24,24 @@ export const register = async (req, res) => {
       });
     }
 
-    // Create new user
-    const user = new User({
-      name,
-      email,
-      password
-    });
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    await user.save();
+    // Create new user
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        address,
+        role: role || 'user',
+      },
+    });
 
     // Generate token
     const token = jwt.sign(
-      { userId: user._id },
-      process.env.JWT_SECRET || 'your-secret-key',
+      { id: user.id, role: user.role },
+      process.env.JWT_SECRET || 'your_super_secret_key',
       { expiresIn: '7d' }
     );
 
@@ -42,9 +50,11 @@ export const register = async (req, res) => {
       data: {
         token,
         user: {
-          id: user._id,
+          id: user.id,
           name: user.name,
-          email: user.email
+          email: user.email,
+          address: user.address,
+          role: user.role,
         }
       }
     });
@@ -69,7 +79,7 @@ export const login = async (req, res) => {
     }
 
     // Find user
-    const user = await User.findOne({ email });
+    const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
       return res.status(401).json({ 
         success: false,
@@ -78,7 +88,7 @@ export const login = async (req, res) => {
     }
 
     // Check password
-    const isMatch = await user.comparePassword(password);
+    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ 
         success: false,
@@ -88,8 +98,8 @@ export const login = async (req, res) => {
 
     // Generate token
     const token = jwt.sign(
-      { userId: user._id },
-      process.env.JWT_SECRET || 'your-secret-key',
+      { id: user.id, role: user.role },
+      process.env.JWT_SECRET || 'your_super_secret_key',
       { expiresIn: '7d' }
     );
 
@@ -98,9 +108,11 @@ export const login = async (req, res) => {
       data: {
         token,
         user: {
-          id: user._id,
+          id: user.id,
           name: user.name,
-          email: user.email
+          email: user.email,
+          address: user.address,
+          role: user.role,
         }
       }
     });
@@ -115,7 +127,7 @@ export const login = async (req, res) => {
 
 export const getCurrentUser = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('-password');
+    const user = await prisma.user.findUnique({ where: { id: req.user.id }, select: { id: true, name: true, email: true, address: true, role: true } });
     if (!user) {
       return res.status(404).json({
         success: false,

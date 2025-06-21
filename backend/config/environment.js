@@ -8,7 +8,7 @@ if (!process.env.PORT) {
 module.exports = {
   port: process.env.PORT || 8000,
   mongoURI: process.env.MONGO_URI,
-  jwtSecret: process.env.JWT_SECRET || "lono-secure-jwt-secret-key",
+  jwtSecret: process.env.JWT_SECRET || "your_super_secret_key",
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "7d",
   env: process.env.NODE_ENV || "development",
   fileUpload: {

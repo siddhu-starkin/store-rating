@@ -1,8 +1,7 @@
 import axios from 'axios';
 
-const API_URL = 'https://blogs-1-gu8b.onrender.com/api';
+const API_URL = 'http://localhost:8000/api';
 
-// Create axios instance with default config
 const api = axios.create({
   baseURL: API_URL,
   headers: {
@@ -10,7 +9,6 @@ const api = axios.create({
   },
 });
 
-// Add token to requests if it exists
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
@@ -21,9 +19,9 @@ api.interceptors.request.use((config) => {
 
 // Auth API calls
 export const API = {
-  register: async ({name, email, password}) => {
+  register: async ({name, email, password, address, role = 'user'}) => {
     try {
-      const response = await api.post('/auth/register', {name: name, email: email, password: password});
+      const response = await api.post('/auth/register', {name, email, password, address, role});
       return response.data;
     } catch (error) {
       throw error.response?.data || { message: 'Registration failed' };
@@ -45,6 +43,80 @@ export const API = {
       return response.data;
     } catch (error) {
       throw error.response?.data || { message: 'Failed to get user data' };
+    }
+  },
+
+  getStores: async (filters = {}) => {
+    try {
+      const params = new URLSearchParams(filters).toString();
+      const response = await api.get(`/stores${params ? `?${params}` : ''}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to fetch stores' };
+    }
+  },
+
+  submitRating: async ({ storeId, rating }) => {
+    try {
+      const response = await api.post('/ratings', { storeId, rating });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to submit rating' };
+    }
+  },
+
+  getAdminStats: async () => {
+    try {
+      const response = await api.get('/users/admin/dashboard');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to fetch admin stats' };
+    }
+  },
+
+  getUsers: async (filters = {}) => {
+    try {
+      const params = new URLSearchParams(filters).toString();
+      const response = await api.get(`/users${params ? `?${params}` : ''}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to fetch users' };
+    }
+  },
+
+  getOwnerDashboard: async () => {
+    try {
+      const response = await api.get('/stores/owner/dashboard');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to fetch owner dashboard' };
+    }
+  },
+
+  createUser: async (userData) => {
+    try {
+      const response = await api.post('/users', userData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to create user' };
+    }
+  },
+
+  createStore: async (storeData) => {
+    try {
+      const response = await api.post('/stores', storeData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to create store' };
+    }
+  },
+
+  getUserRating: async (storeId) => {
+    try {
+      const response = await api.get(`/ratings/user-rating?storeId=${storeId}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to fetch user rating' };
     }
   },
 };

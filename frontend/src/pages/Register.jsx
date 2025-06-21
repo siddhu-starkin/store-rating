@@ -7,21 +7,37 @@ const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [address, setAddress] = useState('');
   const [error, setError] = useState('');
+  const [validationError, setValidationError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
+  const validate = () => {
+    if (name.length < 20 || name.length > 60) return "Name must be 20-60 characters.";
+    if (!/^\S+@\S+\.\S+$/.test(email)) return "Invalid email format.";
+    if (address.length === 0 || address.length > 400) return "Address is required and must be at most 400 characters.";
+    if (password.length < 8 || password.length > 16) return "Password must be 8-16 characters.";
+    if (!/[A-Z]/.test(password) || !/[^A-Za-z0-9]/.test(password)) return "Password must have at least one uppercase letter and one special character.";
+    return null;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setValidationError('');
     setLoading(true);
-
+    const vErr = validate();
+    if (vErr) {
+      setValidationError(vErr);
+      setLoading(false);
+      return;
+    }
     try {
-      const result = await API.register({ name, email, password });
+      const result = await API.register({ name, email, password, address });
       if (result.success) {
-        // After successful registration, log the user in
-        const loginResult = await API.login({ email, password });
+        const loginResult = await API.login({ email, password,role: 'user'});
         if (loginResult.success) {
           localStorage.setItem('token', loginResult.data.token);
           login(loginResult.data.user);
@@ -86,6 +102,21 @@ const Register = () => {
               required
             />
           </div>
+
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2">Address</label>
+            <textarea
+              value={address}
+              onChange={e => setAddress(e.target.value)}
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+              maxLength={400}
+            />
+          </div>
+
+          {validationError && (
+            <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-2 rounded mb-4">{validationError}</div>
+          )}
 
           <button
             type="submit"

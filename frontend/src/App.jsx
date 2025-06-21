@@ -2,12 +2,10 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import BlogList from './pages/BlogList';
-import BlogDetail from './pages/BlogDetail';
-import CreateBlog from './pages/CreateBlog';
-import EditBlog from './pages/EditBlog';
-import MyBlogs from './pages/MyBlogs';
+import StoreList from './pages/StoreList';
 import Navbar from './components/Navbar';
+import AdminDashboard from './pages/AdminDashboard';
+import OwnerDashboard from './pages/OwnerDashboard';
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -16,6 +14,16 @@ const PrivateRoute = ({ children }) => {
   }
   return user ? children : <Navigate to="/login" />;
 };
+
+const DashboardRedirect = () => {
+  const { user, loading } = useAuth();
+  if (loading) return <div>Loading...</div>;
+  if (!user) return <Navigate to="/login" />;
+  if (user.role === 'admin') return <Navigate to="/admin" />;
+  if (user.role === 'owner') return <Navigate to="/owner" />;
+  return <Navigate to="/stores" />;
+};
+
 function App() {
   return (
     <AuthProvider>
@@ -25,32 +33,10 @@ function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/" element={<BlogList />} />
-            <Route path="/blogs/:id" element={<BlogDetail />} />
-            <Route
-              path="/my-blogs"
-              element={
-                <PrivateRoute>
-                  <MyBlogs />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/create"
-              element={
-                <PrivateRoute>
-                  <CreateBlog />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/edit/:id"
-              element={
-                <PrivateRoute>
-                  <EditBlog />
-                </PrivateRoute>
-              }
-            />
+            <Route path="/" element={<DashboardRedirect />} />
+            <Route path="/stores" element={<PrivateRoute><StoreList /></PrivateRoute>} />
+            <Route path="/admin" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />
+            <Route path="/owner" element={<PrivateRoute><OwnerDashboard /></PrivateRoute>} />
           </Routes>
         </div>
       </div>

@@ -3,34 +3,30 @@ dotenv.config();
 
 import express from "express";
 import http from "http";
-import mongoose from "mongoose";
 import cors from "cors";
 import morgan from "morgan";
 import { initializeSocket } from "./socket/socket.js";
+import { PrismaClient } from '@prisma/client';
 
 import authRoutes from "./routes/auth.js";
-import blogRoutes from "./routes/blogs.js";
 import path from "path";
+import storeRoutes from "./routes/stores.js";
+import ratingRoutes from "./routes/ratings.js";
+import userRoutes from "./routes/users.js";
 const app = express();
 const server = http.createServer(app);
 const _dirname=path.dirname("")
 const buildpath=path.join(_dirname,"../frontend/dist")
 app.use(express.static(buildpath));
-mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    
+
+// Initialize Prisma Client
+const prisma = new PrismaClient();
+
+app.use(
+  cors({
+    "origin":"*",
   })
-  .then(() => console.log("✅ MongoDB connected"))
-  .catch((err) => console.error("❌ MongoDB connection error:", err));
-
-
-
-  app.use(
-    cors({
-      "origin":"*",
-    })
-  ); // CORS handles cross-origin requests, not payload size
+); // CORS handles cross-origin requests, not payload size
 app.use(express.json({ limit: "20mb" })); // Set 10MB limit for JSON payloads
 app.use(express.urlencoded({ limit: "20mb", extended: true })); // Set 10MB limit for URL-encoded payloads
 app.use(morgan('dev'));
@@ -52,7 +48,9 @@ const io = initializeSocket(server);
 app.set("io", io);
 
 app.use("/api/auth", authRoutes);
-app.use("/api/blogs", blogRoutes);
+app.use("/api/stores", storeRoutes);
+app.use("/api/ratings", ratingRoutes);
+app.use("/api/users", userRoutes);
 
 app.use((err, req, res, next) => {
   console.error("🔥 Internal Error:", err.stack);

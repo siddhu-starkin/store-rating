@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import AuthContext from "./AuthContext";
 
-const API_URL = import.meta.env.VITE_API_URL || "https://blogs-1-gu8b.onrender.com/api";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);

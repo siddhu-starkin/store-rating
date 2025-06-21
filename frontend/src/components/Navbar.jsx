@@ -15,7 +15,7 @@ const Navbar = () => {
       <div className="container mx-auto px-2 sm:px-4">
         <div className="flex justify-between items-center h-16">
           <Link to="/" className="text-lg sm:text-xl font-bold text-gray-800">
-            Blog App
+            Store Rating
           </Link>
           
           {/* Hamburger menu button for mobile */}
@@ -44,24 +44,15 @@ const Navbar = () => {
           <div className="hidden sm:flex items-center space-x-4">
             {user ? (
               <>
-                <Link
-                  to="/"
-                  className="text-sm text-gray-600 hover:text-gray-800 px-3 py-2 rounded-md font-medium"
-                >
-                  Home
-                </Link>
-                <Link
-                  to="/create"
-                  className="text-sm text-gray-600 hover:text-gray-800 px-3 py-2 rounded-md font-medium"
-                >
-                  Create Blog
-                </Link>
-                <Link
-                  to="/my-blogs"
-                  className="text-sm text-gray-600 hover:text-gray-800 px-3 py-2 rounded-md font-medium"
-                >
-                  My Blogs
-                </Link>
+                {user.role === 'admin' && (
+                  <Link to="/admin" className="text-sm text-gray-600 hover:text-gray-800 px-3 py-2 rounded-md font-medium">Admin Dashboard</Link>
+                )}
+                {user.role === 'owner' && (
+                  <Link to="/owner" className="text-sm text-gray-600 hover:text-gray-800 px-3 py-2 rounded-md font-medium">Owner Dashboard</Link>
+                )}
+                {user.role === 'user' && (
+                  <Link to="/stores" className="text-sm text-gray-600 hover:text-gray-800 px-3 py-2 rounded-md font-medium">Stores</Link>
+                )}
                 <button
                   onClick={logout}
                   className="text-sm text-gray-600 hover:text-gray-800 px-3"
@@ -94,27 +85,15 @@ const Navbar = () => {
             <div className="px-2 pt-2 pb-3 space-y-1">
               {user ? (
                 <>
-                  <Link
-                    to="/"
-                    className="block text-sm text-gray-600 hover:text-gray-800 px-3 py-2 rounded-md font-medium"
-                    onClick={toggleMenu}
-                  >
-                    Home
-                  </Link>
-                  <Link
-                    to="/create"
-                    className="block text-sm text-gray-600 hover:text-gray-800 px-3 py-2 rounded-md font-medium"
-                    onClick={toggleMenu}
-                  >
-                    Create Blog
-                  </Link>
-                  <Link
-                    to="/my-blogs"
-                    className="block text-sm text-gray-600 hover:text-gray-800 px-3 py-2 rounded-md font-medium"
-                    onClick={toggleMenu}
-                  >
-                    My Blogs
-                  </Link>
+                  {user.role === 'admin' && (
+                    <Link to="/admin" className="block text-sm text-gray-600 hover:text-gray-800 px-3 py-2 rounded-md font-medium" onClick={toggleMenu}>Admin Dashboard</Link>
+                  )}
+                  {user.role === 'owner' && (
+                    <Link to="/owner" className="block text-sm text-gray-600 hover:text-gray-800 px-3 py-2 rounded-md font-medium" onClick={toggleMenu}>Owner Dashboard</Link>
+                  )}
+                  {user.role === 'user' && (
+                    <Link to="/stores" className="block text-sm text-gray-600 hover:text-gray-800 px-3 py-2 rounded-md font-medium" onClick={toggleMenu}>Stores</Link>
+                  )}
                   <button
                     onClick={() => {
                       logout();

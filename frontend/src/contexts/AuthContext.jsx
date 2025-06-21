@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem('token');
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      axios.get('https://blogs-1-gu8b.onrender.com/api/auth/me')
+      axios.get('http://localhost:8000/api/auth/me')
         .then(res => {
           if (res.data.success) {
             setUser(res.data.data);
@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (userData) => {
     try {
-      const response = await axios.post('https://blogs-1-gu8b.onrender.com/api/auth/login', userData);
+      const response = await axios.post('http://localhost:8000/api/auth/login', userData);
       if (response.data.success) {
         const { token, user } = response.data.data;
         localStorage.setItem('token', token);
@@ -54,7 +54,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      const response = await axios.post('https://blogs-1-gu8b.onrender.com/api/auth/register', userData);
+      const response = await axios.post('http://localhost:8000/api/auth/register', userData);
       if (response.data.success) {
         const { token, user } = response.data.data;
         localStorage.setItem('token', token);

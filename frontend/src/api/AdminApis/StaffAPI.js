@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:8000/api/staff";
+const BASE_URL = "https://store-rating-f515.onrender.com/api/staff";
 
 export const StaffAPI = {
   fetchAllStaff: async () => {
